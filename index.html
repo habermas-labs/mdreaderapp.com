@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDReader — Open and print Markdown files, simply</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy-deep: #131f2e;
+    --navy-card: #1e2f42;
+    --navy-border: #263a52;
+    --white: #ffffff;
+    --text-body: #cbd8e4;
+    --text-muted: #7a94ab;
+    --accent: #4a9edd;
+    --kofi: #e05a4e;
+    --warn-bg: #2a1f1a;
+    --warn-border: #5a3020;
+    --warn-text: #f0a080;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--navy-deep);
+    color: var(--text-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(19,31,46,0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--navy-border);
+    padding: 0 2rem; height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 0.625rem; text-decoration: none; }
+  .nav-brand img { width: 30px; height: 30px; border-radius: 7px; }
+  .nav-brand-name { font-family: 'Lora', serif; font-size: 1.15rem; font-weight: 600; color: var(--white); letter-spacing: -0.01em; }
+  .nav-links { display: flex; align-items: center; gap: 1.5rem; }
+  .nav-link { color: var(--text-muted); text-decoration: none; font-size: 0.8125rem; transition: color 0.15s; }
+  .nav-link:hover { color: var(--white); }
+  .nav-download {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--accent); color: var(--white); text-decoration: none;
+    font-size: 0.8125rem; font-weight: 500; padding: 0.45rem 1rem;
+    border-radius: 6px; transition: opacity 0.15s;
+  }
+  .nav-download:hover { opacity: 0.88; }
+
+  /* SHARED */
+  .section-eyebrow {
+    font-size: 0.75rem; font-weight: 500; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 1rem;
+  }
+  .md-badge {
+    display: inline-block; font-family: 'Courier New', monospace; font-size: 0.875em;
+    background: rgba(74,158,221,0.12); color: var(--accent);
+    border: 1px solid rgba(74,158,221,0.25); padding: 0.1em 0.45em; border-radius: 4px;
+  }
+  .key {
+    display: inline-block; font-family: 'Courier New', monospace; font-size: 0.8em;
+    background: var(--navy-deep); color: var(--white);
+    border: 1px solid var(--navy-border); padding: 0.1em 0.5em; border-radius: 4px;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--accent); color: var(--white); text-decoration: none;
+    font-size: 1rem; font-weight: 500; padding: 0.8rem 2rem;
+    border-radius: 8px; transition: opacity 0.15s, transform 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: transparent; color: var(--text-body); text-decoration: none;
+    font-size: 0.9rem; font-weight: 400; padding: 0.7rem 1.5rem;
+    border-radius: 8px; border: 1px solid var(--navy-border);
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .btn-secondary:hover { border-color: var(--text-muted); color: var(--white); }
+
+  /* HERO */
+  .hero { text-align: center; padding: 6rem 1.5rem 4rem; max-width: 720px; margin: 0 auto; }
+  .hero-icon {
+    width: 96px; height: 96px; border-radius: 22px; margin: 0 auto 2rem; display: block;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .hero h1 {
+    font-family: 'Lora', serif; font-size: clamp(2rem,5vw,3rem); font-weight: 600;
+    color: var(--white); line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 1.25rem;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero-sub { font-size: 1.125rem; font-weight: 300; color: var(--text-body); line-height: 1.7; max-width: 520px; margin: 0 auto 2.5rem; }
+  .hero-cta-group { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+  .hero-meta { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* SCREENSHOT */
+  .screenshot-section { padding: 0 1.5rem 5rem; max-width: 860px; margin: 0 auto; }
+  .screenshot-wrap { border-radius: 12px; overflow: hidden; border: 1px solid var(--navy-border); box-shadow: 0 24px 80px rgba(0,0,0,0.5); }
+  .screenshot-wrap img { display: block; width: 100%; height: auto; }
+  .screenshot-caption { text-align: center; margin-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted); font-style: italic; }
+
+  /* EXPLAINER */
+  .explainer { background: var(--navy-card); border-top: 1px solid var(--navy-border); border-bottom: 1px solid var(--navy-border); padding: 4rem 1.5rem; }
+  .explainer-inner { max-width: 680px; margin: 0 auto; text-align: center; }
+  .explainer h2 { font-family: 'Lora', serif; font-size: clamp(1.5rem,3.5vw,2rem); font-weight: 600; color: var(--white); line-height: 1.3; letter-spacing: -0.015em; margin-bottom: 1.25rem; }
+  .explainer p { font-size: 1rem; font-weight: 300; line-height: 1.75; color: var(--text-body); max-width: 560px; margin: 0 auto; }
+
+  /* FEATURES */
+  .features { padding: 5rem 1.5rem; max-width: 900px; margin: 0 auto; }
+  .features-header { text-align: center; margin-bottom: 3rem; }
+  .features-header h2 { font-family: 'Lora', serif; font-size: clamp(1.5rem,3.5vw,2rem); font-weight: 600; color: var(--white); letter-spacing: -0.015em; }
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 1.25rem; }
+  .feature-card { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: 12px; padding: 1.75rem; transition: border-color 0.2s; }
+  .feature-card:hover { border-color: rgba(74,158,221,0.35); }
+  .feature-icon { width: 40px; height: 40px; background: rgba(74,158,221,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+  .feature-icon svg { width: 20px; height: 20px; stroke: var(--accent); fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .feature-card h3 { font-family: 'Lora', serif; font-size: 1.05rem; font-weight: 600; color: var(--white); margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+  .feature-card p { font-size: 0.9rem; font-weight: 300; line-height: 1.7; color: var(--text-body); }
+
+  /* HOW IT WORKS */
+  .how { background: var(--navy-card); border-top: 1px solid var(--navy-border); border-bottom: 1px solid var(--navy-border); padding: 5rem 1.5rem; }
+  .how-inner { max-width: 680px; margin: 0 auto; }
+  .how-header { text-align: center; margin-bottom: 3rem; }
+  .how-header h2 { font-family: 'Lora', serif; font-size: clamp(1.5rem,3.5vw,2rem); font-weight: 600; color: var(--white); letter-spacing: -0.015em; }
+  .steps { display: flex; flex-direction: column; }
+  .step { display: flex; gap: 1.25rem; align-items: flex-start; }
+  .step-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--navy-deep); border: 1px solid var(--navy-border); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 500; color: var(--accent); flex-shrink: 0; }
+  .step-line { width: 1px; flex: 1; min-height: 2rem; background: var(--navy-border); margin: 4px 0; }
+  .step-body { padding-bottom: 2.25rem; padding-top: 0.4rem; }
+  .steps .step:last-child .step-body { padding-bottom: 0; }
+  .step-body h3 { font-size: 0.9375rem; font-weight: 500; color: var(--white); margin-bottom: 0.3rem; }
+  .step-body p { font-size: 0.875rem; font-weight: 300; line-height: 1.65; color: var(--text-body); }
+
+  /* SMARTSCREEN */
+  .smartscreen { padding: 5rem 1.5rem; max-width: 780px; margin: 0 auto; }
+  .smartscreen-header { text-align: center; margin-bottom: 2.5rem; }
+  .smartscreen-header h2 { font-family: 'Lora', serif; font-size: clamp(1.5rem,3.5vw,2rem); font-weight: 600; color: var(--white); letter-spacing: -0.015em; line-height: 1.3; margin-bottom: 0.75rem; }
+  .smartscreen-header p { font-size: 0.9375rem; font-weight: 300; color: var(--text-body); line-height: 1.7; max-width: 560px; margin: 0 auto; }
+  .warn-box { background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; display: flex; gap: 1rem; align-items: flex-start; }
+  .warn-box svg { width: 20px; height: 20px; stroke: var(--warn-text); fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-top: 1px; }
+  .warn-box p { font-size: 0.875rem; font-weight: 300; line-height: 1.65; color: var(--warn-text); }
+
+  /* SHARED STEP CARDS (smartscreen + file assoc) */
+  .ss-steps { display: flex; flex-direction: column; gap: 1rem; }
+  .ss-step { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: 10px; padding: 1.25rem 1.5rem; display: flex; gap: 1rem; align-items: flex-start; }
+  .ss-step-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(74,158,221,0.1); border: 1px solid rgba(74,158,221,0.25); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 500; color: var(--accent); flex-shrink: 0; }
+  .ss-step-body h4 { font-size: 0.9rem; font-weight: 500; color: var(--white); margin-bottom: 0.25rem; }
+  .ss-step-body p { font-size: 0.85rem; font-weight: 300; line-height: 1.6; color: var(--text-body); }
+
+  /* FILE ASSOCIATION */
+  .file-assoc { background: var(--navy-card); border-top: 1px solid var(--navy-border); border-bottom: 1px solid var(--navy-border); padding: 5rem 1.5rem; }
+  .file-assoc-inner { max-width: 780px; margin: 0 auto; }
+  .file-assoc-header { text-align: center; margin-bottom: 2.5rem; }
+  .file-assoc-header h2 { font-family: 'Lora', serif; font-size: clamp(1.5rem,3.5vw,2rem); font-weight: 600; color: var(--white); letter-spacing: -0.015em; line-height: 1.3; margin-bottom: 0.75rem; }
+  .file-assoc-header p { font-size: 0.9375rem; font-weight: 300; color: var(--text-body); line-height: 1.7; max-width: 560px; margin: 0 auto; }
+
+  /* KO-FI */
+  .kofi-section { padding: 5rem 1.5rem; max-width: 640px; margin: 0 auto; text-align: center; }
+  .kofi-card { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: 16px; padding: 2.5rem 2rem; }
+  .kofi-paw { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+  .kofi-card h2 { font-family: 'Lora', serif; font-size: 1.5rem; font-weight: 600; color: var(--white); letter-spacing: -0.015em; margin-bottom: 0.75rem; line-height: 1.3; }
+  .kofi-card p { font-size: 0.9375rem; font-weight: 300; line-height: 1.7; color: var(--text-body); margin-bottom: 1.75rem; }
+  .kofi-card p em { font-style: italic; color: #f0b090; }
+  .btn-kofi { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--kofi); color: var(--white); text-decoration: none; font-size: 0.9375rem; font-weight: 500; padding: 0.75rem 1.75rem; border-radius: 8px; transition: opacity 0.15s, transform 0.15s; }
+  .btn-kofi:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* DOWNLOAD CTA */
+  .cta-section { padding: 5rem 1.5rem; text-align: center; max-width: 600px; margin: 0 auto; }
+  .cta-section h2 { font-family: 'Lora', serif; font-size: clamp(1.5rem,3.5vw,2rem); font-weight: 600; color: var(--white); letter-spacing: -0.015em; margin-bottom: 0.75rem; line-height: 1.3; }
+  .cta-section > p { font-size: 0.9375rem; font-weight: 300; color: var(--text-body); margin-bottom: 2rem; line-height: 1.65; }
+  .download-options { display: flex; flex-direction: column; align-items: center; gap: 0.875rem; margin-bottom: 1.25rem; }
+  .download-note { font-size: 0.8rem; color: var(--text-muted); line-height: 1.7; }
+  .download-note a { color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; }
+  .download-note a:hover { color: var(--text-body); }
+
+  /* FOOTER */
+  footer { border-top: 1px solid var(--navy-border); padding: 2rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; max-width: 900px; margin: 0 auto; }
+  .footer-brand { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+  .footer-brand img { width: 22px; height: 22px; border-radius: 5px; }
+  .footer-brand span { font-family: 'Lora', serif; font-size: 0.9rem; color: var(--text-muted); }
+  .footer-right { font-size: 0.775rem; color: var(--text-muted); }
+  .footer-right a { color: var(--text-muted); text-decoration: none; }
+  .footer-right a:hover { color: var(--text-body); }
+
+  @media (max-width: 500px) {
+    nav { padding: 0 1rem; }
+    .nav-links .nav-link { display: none; }
+    .hero { padding: 4rem 1.25rem 3.5rem; }
+    footer { justify-content: center; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">
+    <img src="mdr-icon-transparent-bg.png" alt="MDReader icon">
+    <span class="nav-brand-name">MDReader</span>
+  </a>
+  <div class="nav-links">
+    <a href="#how-it-works" class="nav-link">How it works</a>
+    <a href="#file-association" class="nav-link">File setup</a>
+    <a href="#download" class="nav-download">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M8 2v8M5 7l3 3 3-3"/><path d="M2 12h12"/></svg>
+      Download
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <img src="mdr-icon-transparent-bg.png" alt="MDReader app icon" class="hero-icon">
+  <h1>Open your <em>.md file</em>,<br>no fuss.</h1>
+  <p class="hero-sub">
+    Someone sent you an <span class="md-badge">.md</span> file and you're not sure what to do with it.
+    MDReader opens it, makes it look beautiful, and lets you print it. That's it.
+  </p>
+  <div class="hero-cta-group">
+    <a href="#download" class="btn-primary">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3"/><path d="M2 12h12"/></svg>
+      Download for Windows — Free
+    </a>
+    <span class="hero-meta">Windows 10 or later &nbsp;·&nbsp; Version 1.0.0 Lite</span>
+  </div>
+</section>
+
+<!-- SCREENSHOT -->
+<section class="screenshot-section">
+  <div class="screenshot-wrap">
+    <img src="screenshot-app.png" alt="MDReader showing an open Markdown document">
+  </div>
+  <p class="screenshot-caption">MDReader displaying a Markdown file — clean, readable, ready to print.</p>
+</section>
+
+<!-- WHAT IS AN MD FILE -->
+<section class="explainer">
+  <div class="explainer-inner">
+    <p class="section-eyebrow">What even is an .md file?</p>
+    <h2>Plain text that's supposed to look good — it just needs the right app.</h2>
+    <p>
+      An <span class="md-badge">.md</span> (Markdown) file is a document written in plain text with simple formatting signals —
+      like <span class="md-badge"># Heading</span> or <span class="md-badge">**bold**</span>.
+      Developers and writers use them constantly. When you open one in Notepad, it looks like a mess.
+      MDReader reads all those signals and shows you the formatted document, exactly the way the author intended.
+    </p>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="features-header">
+    <p class="section-eyebrow">What MDReader does</p>
+    <h2>Two things, done well.</h2>
+  </div>
+  <div class="feature-grid">
+
+    <div class="feature-card">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h10M7 12h7M7 16h5"/></svg></div>
+      <h3>Beautiful reading</h3>
+      <p>Headings, bullet points, tables, code blocks — everything is rendered cleanly and clearly. It just looks right.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
+      <h3>Clean printing</h3>
+      <p>Need a paper copy? Print directly from MDReader with properly formatted output — no stray symbols, no broken layout.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg></div>
+      <h3>Just double-click</h3>
+      <p>Set MDReader as your default for <span class="md-badge">.md</span> files and they open instantly — no menus, no extra steps.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+      <h3>Tabs for multiple files</h3>
+      <p>Open several files at once and switch between them with tabs — familiar, simple, no learning curve.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+      <h3>Fast and lightweight</h3>
+      <p>Installs in seconds, opens instantly. No subscription, no account, no cloud. Just a small app that does its job.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <h3>No surprises</h3>
+      <p>MDReader doesn't edit your files, sync them anywhere, or ask for permissions. It reads. It prints. That's all.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how-it-works">
+  <div class="how-inner">
+    <div class="how-header">
+      <p class="section-eyebrow">Getting started</p>
+      <h2>Up and running in under a minute.</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <h3>Download the installer</h3>
+          <p>Click the download button below and save the installer file to your computer. The MSI installer is recommended for most people.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <h3>Run the installer</h3>
+          <p>Double-click to install. Windows may show a security warning the first time — see the note below for how to safely click through it. The whole process takes about 30 seconds.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <h3>Open your file</h3>
+          <p>Use the <span style="color:var(--white);font-weight:500;">Open File</span> button in the app, or go to File → Open. You can also drag an <span class="md-badge">.md</span> file directly onto the MDReader window.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-left"><div class="step-num">4</div></div>
+        <div class="step-body">
+          <h3>Read and print</h3>
+          <p>Your document is right there, formatted and ready. Print with <span class="key">Ctrl+P</span> or use File → Print whenever you need a copy.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SMARTSCREEN -->
+<section class="smartscreen">
+  <div class="smartscreen-header">
+    <p class="section-eyebrow">A note on Windows security</p>
+    <h2>Windows might warn you. That's normal.</h2>
+    <p>
+      Because MDReader is an independent app from a small developer, Windows SmartScreen may show a warning the first time you install it.
+      This doesn't mean anything is wrong — it just means Windows doesn't recognize the publisher yet. Here's how to proceed.
+    </p>
+  </div>
+  <div class="warn-box">
+    <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <p>You may see a dialog that says <em>"Windows protected your PC"</em> or <em>"Unknown publisher."</em> This is Windows SmartScreen. It appears for any new app that hasn't yet built up enough install history with Microsoft — not because anything is wrong with the file.</p>
+  </div>
+  <div class="ss-steps">
+    <div class="ss-step">
+      <div class="ss-step-num">1</div>
+      <div class="ss-step-body">
+        <h4>Click "More info"</h4>
+        <p>When the SmartScreen dialog appears, look for the small <em>"More info"</em> link and click it. This expands the dialog to show more options.</p>
+      </div>
+    </div>
+    <div class="ss-step">
+      <div class="ss-step-num">2</div>
+      <div class="ss-step-body">
+        <h4>Click "Run anyway"</h4>
+        <p>A <em>"Run anyway"</em> button will appear at the bottom. Click it to continue with the installation.</p>
+      </div>
+    </div>
+    <div class="ss-step">
+      <div class="ss-step-num">3</div>
+      <div class="ss-step-body">
+        <h4>Complete the installer</h4>
+        <p>The standard Windows installer will open. Follow the prompts — it takes about 30 seconds and installs MDReader like any other app.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FILE ASSOCIATION -->
+<section class="file-assoc" id="file-association">
+  <div class="file-assoc-inner">
+    <div class="file-assoc-header">
+      <p class="section-eyebrow">Opening .md files automatically</p>
+      <h2>Make MDReader your default for <span class="md-badge" style="font-size:0.85em;">.md</span> files.</h2>
+      <p>
+        Once MDReader is your default, double-clicking any <span class="md-badge">.md</span> file opens it automatically — no need to go through File → Open each time.
+        If another app is currently set as the default, here's how to switch it.
+      </p>
+    </div>
+    <div class="ss-steps">
+      <div class="ss-step">
+        <div class="ss-step-num">1</div>
+        <div class="ss-step-body">
+          <h4>Find any .md file on your computer</h4>
+          <p>You just need one <span class="md-badge">.md</span> file to work with — it can be the one you were sent, or any other.</p>
+        </div>
+      </div>
+      <div class="ss-step">
+        <div class="ss-step-num">2</div>
+        <div class="ss-step-body">
+          <h4>Right-click the file</h4>
+          <p>Right-click the file icon to open the context menu.</p>
+        </div>
+      </div>
+      <div class="ss-step">
+        <div class="ss-step-num">3</div>
+        <div class="ss-step-body">
+          <h4>Choose "Open with" → "Choose another app"</h4>
+          <p>Hover over <em>Open with</em> in the menu, then click <em>Choose another app</em> from the submenu that appears.</p>
+        </div>
+      </div>
+      <div class="ss-step">
+        <div class="ss-step-num">4</div>
+        <div class="ss-step-body">
+          <h4>Select MDReader from the list</h4>
+          <p>MDReader should appear in the list. If you don't see it, scroll down and click <em>More apps</em>. If it's still not listed, click <em>Look for another app on this PC</em> and navigate to where MDReader is installed — usually <span class="key">C:\Program Files\MDReader</span>.</p>
+        </div>
+      </div>
+      <div class="ss-step">
+        <div class="ss-step-num">5</div>
+        <div class="ss-step-body">
+          <h4>Check "Always use this app" and click OK</h4>
+          <p>Make sure the checkbox at the bottom — <em>"Always use this app to open .md files"</em> — is ticked before clicking OK. From now on, double-clicking any <span class="md-badge">.md</span> file will open it straight in MDReader.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KO-FI -->
+<section class="kofi-section">
+  <div class="kofi-card">
+    <span class="kofi-paw">🐾</span>
+    <h2>If MDReader saves you time, consider buying me a coffee.</h2>
+    <p>
+      MDReader is free and always will be. But if it's made your life a little easier,
+      I'd appreciate the support —
+      <em>and if you can spare one, I'll get a pup cup for Nagi and tell her it's from you.</em>
+    </p>
+    <a href="https://ko-fi.com/habermaslabs" target="_blank" rel="noopener" class="btn-kofi">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      Support on Ko-fi
+    </a>
+  </div>
+</section>
+
+<!-- DOWNLOAD CTA -->
+<section class="cta-section" id="download">
+  <p class="section-eyebrow">Download</p>
+  <h2>Free for Windows.<br>No strings attached.</h2>
+  <p>No account needed. No trial period. No ads. Just download, install, and open your files.</p>
+  <div class="download-options">
+    <a href="#" class="btn-primary">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3"/><path d="M2 12h12"/></svg>
+      Download MDReader — MSI installer (3.95 MB)
+    </a>
+    <a href="#" class="btn-secondary">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8M5 7l3 3 3-3"/><path d="M2 12h12"/></svg>
+      Alternative: EXE installer (12.5 MB)
+    </a>
+  </div>
+  <p class="download-note">
+    Windows 10 or later &nbsp;·&nbsp; Version 1.0.0 Lite<br>
+    The MSI installer is recommended for most people. The EXE is a self-contained alternative if the MSI doesn't work on your machine.<br><br>
+    Windows may show a security warning during install —
+    <a href="#how-it-works">see the note above</a> for how to click through it safely.
+  </p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="footer-brand">
+    <img src="mdr-icon-transparent-bg.png" alt="MDReader icon">
+    <span>MDReader</span>
+  </a>
+  <div class="footer-right">
+    © 2026 Habermas Labs &nbsp;·&nbsp;
+    <a href="https://ko-fi.com/habermaslabs" target="_blank" rel="noopener">Ko-fi</a>
+  </div>
+</footer>
+
+</body>
+</html>
