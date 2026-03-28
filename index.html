@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MDReader — Open and print Markdown files, simply</title>
-<meta name="description" content="MDReader is a free Windows app for opening and printing Markdown (.md) files. No coding, no complexity — just clean, formatted reading and printing for everyone.">
-<meta name="keywords" content="markdown reader, md file viewer, open md file, markdown viewer windows, md file opener, free markdown app, print markdown">
+<meta name="description" content="MDReader is a free Windows app for opening and printing Markdown (.md) files. Dark mode, accessibility themes, and plain text support built in. No coding, no complexity.">
+<meta name="keywords" content="markdown reader, md file viewer, open md file, markdown viewer windows, md file opener, free markdown app, print markdown, dyslexia markdown reader, markdown accessibility, dark mode markdown viewer">
 <meta property="og:title" content="MDReader — Open and print Markdown files, simply">
 <meta property="og:description" content="Got an .md file and not sure what to do with it? MDReader opens it, makes it look beautiful, and lets you print it. Free for Windows.">
 <meta property="og:type" content="website">
@@ -133,6 +133,9 @@
   .features { padding: 5rem 1.5rem; max-width: 900px; margin: 0 auto; }
   .features-header { text-align: center; margin-bottom: 3rem; }
   .features-header h2 { font-family: 'Lora', serif; font-size: clamp(1.5rem,3.5vw,2rem); font-weight: 600; color: var(--white); letter-spacing: -0.015em; }
+  .features-footnote { text-align: center; margin-top: 2rem; font-size: 0.85rem; font-weight: 300; color: var(--text-muted); font-style: italic; }
+  .features-footnote a { color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; }
+  .features-footnote a:hover { color: var(--text-body); }
   .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 1.25rem; }
   .feature-card { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: 12px; padding: 1.75rem; transition: border-color 0.2s; }
   .feature-card:hover { border-color: rgba(74,158,221,0.35); }
@@ -140,6 +143,18 @@
   .feature-icon svg { width: 20px; height: 20px; stroke: var(--accent); fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
   .feature-card h3 { font-family: 'Lora', serif; font-size: 1.05rem; font-weight: 600; color: var(--white); margin-bottom: 0.5rem; letter-spacing: -0.01em; }
   .feature-card p { font-size: 0.9rem; font-weight: 300; line-height: 1.7; color: var(--text-body); }
+
+  /* ACCESSIBILITY NARRATIVE */
+  .a11y-section { background: var(--navy-card); border-top: 1px solid var(--navy-border); border-bottom: 1px solid var(--navy-border); padding: 5rem 1.5rem; }
+  .a11y-inner { max-width: 720px; margin: 0 auto; }
+  .a11y-inner h2 { font-family: 'Lora', serif; font-size: clamp(1.5rem,3.5vw,2rem); font-weight: 600; color: var(--white); letter-spacing: -0.015em; line-height: 1.3; margin-bottom: 1.25rem; }
+  .a11y-intro { font-size: 1rem; font-weight: 300; line-height: 1.75; color: var(--text-body); margin-bottom: 2.5rem; }
+  .a11y-modes { display: flex; flex-direction: column; gap: 1.5rem; }
+  .a11y-mode h3 { font-family: 'Lora', serif; font-size: 1rem; font-weight: 600; color: var(--white); margin-bottom: 0.4rem; letter-spacing: -0.01em; }
+  .a11y-mode p { font-size: 0.9rem; font-weight: 300; line-height: 1.7; color: var(--text-body); }
+  .a11y-mode a { color: var(--accent); text-decoration: none; }
+  .a11y-mode a:hover { text-decoration: underline; }
+  .a11y-footer { margin-top: 2rem; font-size: 0.875rem; font-weight: 300; line-height: 1.7; color: var(--text-muted); font-style: italic; }
 
   /* HOW IT WORKS */
   .how { background: var(--navy-card); border-top: 1px solid var(--navy-border); border-bottom: 1px solid var(--navy-border); padding: 5rem 1.5rem; }
@@ -165,7 +180,7 @@
   .warn-box svg { width: 20px; height: 20px; stroke: var(--warn-text); fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-top: 1px; }
   .warn-box p { font-size: 0.875rem; font-weight: 300; line-height: 1.65; color: var(--warn-text); }
 
-  /* SHARED STEP CARDS (smartscreen + file assoc) */
+  /* SHARED STEP CARDS */
   .ss-steps { display: flex; flex-direction: column; gap: 1rem; }
   .ss-step { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: 10px; padding: 1.25rem 1.5rem; display: flex; gap: 1rem; align-items: flex-start; }
   .ss-step-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(74,158,221,0.1); border: 1px solid rgba(74,158,221,0.25); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 500; color: var(--accent); flex-shrink: 0; }
@@ -240,7 +255,7 @@
   <h1>Open your <em>.md file</em>,<br>no fuss.</h1>
   <p class="hero-sub">
     Someone sent you an <span class="md-badge">.md</span> file and you're not sure what to do with it.
-    MDReader opens it, makes it look beautiful, and lets you print it. That's it.
+    MDReader opens it, makes it look beautiful, and lets you print it — and more, for those who need it.
   </p>
   <div class="hero-cta-group">
     <a href="#download" class="btn-primary">
@@ -277,7 +292,7 @@
 <section class="features">
   <div class="features-header">
     <p class="section-eyebrow">What MDReader does</p>
-    <h2>Two things, done well.</h2>
+    <h2>Two things*, done well.</h2>
   </div>
   <div class="feature-grid">
 
@@ -317,6 +332,42 @@
       <p>MDReader doesn't edit your files, sync them anywhere, or ask for permissions. It reads. It prints. That's all.</p>
     </div>
 
+  </div>
+  <p class="features-footnote">* Plus <a href="#accessibility">accessibility themes</a> and plain text (.txt) support — because reading should work for everyone.</p>
+</section>
+
+<!-- ACCESSIBILITY NARRATIVE -->
+<section class="a11y-section" id="accessibility">
+  <div class="a11y-inner">
+    <p class="section-eyebrow">Accessibility & reading modes</p>
+    <h2>Reading should work for everyone.</h2>
+    <p class="a11y-intro">
+      MDReader ships with five reading modes designed for real reading situations — not as an afterthought,
+      but as a first-class part of what the app is for.
+    </p>
+    <div class="a11y-modes">
+      <div class="a11y-mode">
+        <h3>High Contrast</h3>
+        <p>Pure black background, bright white text, high-visibility accents — following Windows' own accessibility conventions. If you use Windows' built-in high contrast mode elsewhere, this will feel familiar.</p>
+      </div>
+      <div class="a11y-mode">
+        <h3>Large Print</h3>
+        <p>Increases the base font size and line spacing in a way that's distinct from simply zooming your browser — it scales the text while keeping the document layout intact, consistent with WCAG 2.1 guidelines on text resizing.</p>
+      </div>
+      <div class="a11y-mode">
+        <h3>Dyslexia-Friendly</h3>
+        <p>Uses <a href="https://antijingoist.itch.io/opendyslexic" target="_blank" rel="noopener">OpenDyslexic</a>, a free typeface designed by Abbie Gonzalez specifically to reduce common letter confusion. Dyslexia often causes letters to appear flipped or mirrored — b and d, p and q. Most professional typefaces are geometrically consistent, which makes those pairs nearly identical. OpenDyslexic deliberately breaks that symmetry: each character is bottom-weighted and distinctly shaped so similar letters are harder to confuse. The spacing and layout are informed by the British Dyslexia Association's style guide. It's a small thing that makes a real difference for readers who need it.</p>
+      </div>
+      <div class="a11y-mode">
+        <h3>Sepia</h3>
+        <p>Reduces eye strain for long reading sessions with a warm off-white background — the same approach e-readers like Kindle and Kobo have used for years, because it works.</p>
+      </div>
+      <div class="a11y-mode">
+        <h3>Print-Optimized</h3>
+        <p>Shows you exactly what your document will look like when printed, before you print it. White background, serif body font, no app chrome.</p>
+      </div>
+    </div>
+    <p class="a11y-footer">All five modes persist across sessions and apply to every file you open, including plain text files.</p>
   </div>
 </section>
 
