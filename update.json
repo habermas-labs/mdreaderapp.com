@@ -1,0 +1,11 @@
+{
+  "version": "1.3.0",
+  "notes": "Adds auto-update notifications, window position and size memory, and accessibility improvements.",
+  "pub_date": "2026-03-28T00:00:00Z",
+  "platforms": {
+    "windows-x86_64": {
+      "url": "https://github.com/habermas-labs/mdreader/releases/download/v1.3.0/MDReader-Setup.msi",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSa1IrckdYQ01mZCtwYzNoZlBpODBjVDNLaTVwdG9DTWZiYmhrUzd4Q09UYzNQZE56dWNBRGN1YXVBdkN3aW9CbkMrUmlwVjF5RkpXY2JDbEhkd2Q0U0lxMS9SQWNCNWdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc0NzQ1NDc0CWZpbGU6TURSZWFkZXJfMS4zLjBfeDY0X2VuLVVTLm1zaQpIak5LRGwrSmNvaFlkQXlkZGNyd1p0Um0yOGJGTnZJbUVSbVBUbTBDck9aM0F6a3FrSkxmZFJrVHA2Sk1Gc1R4aHdIVGlSSmtIWGt2YWN2ZVBIeTJEUT09Cg=="
+    }
+  }
+}
